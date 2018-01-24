@@ -100,7 +100,7 @@ public:
 
 #ifdef IGL_VIEWER_WITH_NANOGUI
   // Text rendering helper
-  TextRenderer textrenderer;
+  glfw::TextRenderer textrenderer;
 #endif
 
 

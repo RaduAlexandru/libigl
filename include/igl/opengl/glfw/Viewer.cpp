@@ -21,7 +21,7 @@
 
 #ifndef __APPLE__
 #  define GLEW_STATIC
-#  include <GL/glew.h>
+#  include <GL/glad.h>
 #endif
 
 #ifdef __APPLE__
@@ -243,15 +243,16 @@ namespace glfw
     }
     glfwMakeContextCurrent(window);
     #ifndef __APPLE__
-      glewExperimental = true;
-      GLenum err = glewInit();
-      if(GLEW_OK != err)
-      {
-        /* Problem: glewInit failed, something is seriously wrong. */
-       fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
-      }
-      glGetError(); // pull and savely ignonre unhandled errors like GL_INVALID_ENUM
-      fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
+       gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
+//      glewExperimental = true;
+//      GLenum err = glewInit();
+//      if(GLEW_OK != err)
+//      {
+//        /* Problem: glewInit failed, something is seriously wrong. */
+//       fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+//      }
+//      glGetError(); // pull and savely ignonre unhandled errors like GL_INVALID_ENUM
+//      fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
     #endif
     #if defined(DEBUG) || defined(_DEBUG)
       int major, minor, rev;

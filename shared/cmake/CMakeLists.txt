@@ -346,11 +346,11 @@ if(LIBIGL_WITH_OPENGL)
   ### GLEW for linux and windows
   if((UNIX AND NOT APPLE) OR WIN32) ### Compile glew if needed
     set(GLEW_INSTALL OFF CACHE BOOL " " FORCE)
-    add_subdirectory("${NANOGUI_DIR}/ext/glew" "glew")
+    #add_subdirectory("${NANOGUI_DIR}/ext/glew" "glew")
   endif()
   if(NOT APPLE)
     list(APPEND LIBIGL_INCLUDE_DIRS "${NANOGUI_DIR}/ext/glew/include")
-    list(APPEND LIBIGL_OPENGL_EXTRA_LIBRARIES "glew")
+    #list(APPEND LIBIGL_OPENGL_EXTRA_LIBRARIES "glew")
   endif()
   list(APPEND LIBIGL_EXTRA_LIBRARIES ${LIBIGL_OPENGL_EXTRA_LIBRARIES})
 
