@@ -58,10 +58,10 @@ endfunction()
 ## Embree
 function(igl_download_embree)
 	igl_download_project(embree
-		URL            https://github.com/embree/embree/archive/v2.17.4.tar.gz
-		URL_MD5        2038f3216b1d626e87453aee72c470e5
-		# GIT_REPOSITORY https://github.com/embree/embree.git
-		# GIT_TAG        cb61322db3bb7082caed21913ad14869b436fe78
+		# URL            https://github.com/embree/embree/archive/v2.17.4.tar.gz
+		# URL_MD5        2038f3216b1d626e87453aee72c470e5
+		GIT_REPOSITORY https://github.com/embree/embree.git
+		GIT_TAG        cb61322db3bb7082caed21913ad14869b436fe78
 	)
 endfunction()
 
