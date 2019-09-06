@@ -14,13 +14,15 @@ template <
   typename Vtype,
   typename Ftype,
   typename Ntype,
-  typename UVtype>
+  typename UVtype,
+  typename Ctype>
 IGL_INLINE bool igl::readPLY(
   const std::string filename,
   std::vector<std::vector<Vtype> > & V,
   std::vector<std::vector<Ftype> > & F,
   std::vector<std::vector<Ntype> > & N,
-  std::vector<std::vector<UVtype> >  & UV)
+  std::vector<std::vector<UVtype> >  & UV,
+  std::vector<std::vector<Ctype> >  & C)
 {
   using namespace std;
   // Largely follows ply2iv.c
@@ -29,26 +31,29 @@ IGL_INLINE bool igl::readPLY(
   {
     return false;
   }
-  return readPLY(ply_file,V,F,N,UV);
+  return readPLY(ply_file,V,F,N,UV,C);
 }
 
 template <
   typename Vtype,
   typename Ftype,
   typename Ntype,
-  typename UVtype>
+  typename UVtype,
+  typename Ctype>
 IGL_INLINE bool igl::readPLY(
   FILE * ply_file,
   std::vector<std::vector<Vtype> > & V,
   std::vector<std::vector<Ftype> > & F,
   std::vector<std::vector<Ntype> > & N,
-  std::vector<std::vector<UVtype> >  & UV)
+  std::vector<std::vector<UVtype> >  & UV,
+  std::vector<std::vector<Ctype> >  & C)
 {
   using namespace std;
    typedef struct Vertex {
      double x,y,z;          /* position */
      double nx,ny,nz;         /* surface normal */
      double s,t;              /* texture coordinates */
+     double red,green,blue;          /* color */
      void *other_props;       /* other properties */
    } Vertex;
 
@@ -67,6 +72,9 @@ IGL_INLINE bool igl::readPLY(
     {"nz", PLY_DOUBLE, PLY_DOUBLE, offsetof(Vertex,nz), 0, 0, 0, 0},
     {"s", PLY_DOUBLE, PLY_DOUBLE, offsetof(Vertex,s), 0, 0, 0, 0},
     {"t", PLY_DOUBLE, PLY_DOUBLE, offsetof(Vertex,t), 0, 0, 0, 0},
+    {"red", PLY_DOUBLE, PLY_DOUBLE, offsetof(Vertex,red), 0, 0, 0, 0},
+    {"green", PLY_DOUBLE, PLY_DOUBLE, offsetof(Vertex,green), 0, 0, 0, 0},
+    {"blue", PLY_DOUBLE, PLY_DOUBLE, offsetof(Vertex,blue), 0, 0, 0, 0},
   };
 
   igl::ply::PlyProperty face_props[] = { /* list of property information for a face */
@@ -84,6 +92,7 @@ IGL_INLINE bool igl::readPLY(
 
   bool has_normals = false;
   bool has_texture_coords = false;
+  bool has_color = false;
   igl::ply::PlyProperty **plist;
   int nprops;
   int elem_count;
@@ -114,6 +123,15 @@ IGL_INLINE bool igl::readPLY(
         ply_get_property(in_ply,"vertex",&vert_props[7]);
         has_texture_coords = true;
       }
+      if (igl::ply::equal_strings ("red", prop->name) ||
+        igl::ply::equal_strings ("green", prop->name) ||
+        igl::ply::equal_strings ("blue", prop->name))
+      {
+        ply_get_property(in_ply,"vertex",&vert_props[8]);
+        ply_get_property(in_ply,"vertex",&vert_props[9]);
+        ply_get_property(in_ply,"vertex",&vert_props[10]);
+        has_color = true;
+      }
     }
     // Is this call necessary?
     ply_get_other_properties(in_ply,"vertex",
@@ -132,6 +150,13 @@ IGL_INLINE bool igl::readPLY(
     }else
     {
       UV.resize(0);
+    }
+    if(has_color)
+    {
+      C.resize(elem_count,std::vector<Ctype>(3));
+    }else
+    {
+      C.resize(0);
     }
    	
 	for(int j = 0;j<elem_count;j++)
@@ -152,6 +177,12 @@ IGL_INLINE bool igl::readPLY(
       {
         UV[j][0] = v.s;
         UV[j][1] = v.t;
+      }
+      if(has_color)
+      {
+        C[j][0] = v.red;
+        C[j][1] = v.green;
+        C[j][2] = v.blue;
       }
     }
   }
@@ -178,19 +209,22 @@ template <
   typename DerivedV,
   typename DerivedF,
   typename DerivedN,
-  typename DerivedUV>
+  typename DerivedUV,
+  typename DerivedC>
 IGL_INLINE bool igl::readPLY(
   const std::string filename,
   Eigen::PlainObjectBase<DerivedV> & V,
   Eigen::PlainObjectBase<DerivedF> & F,
   Eigen::PlainObjectBase<DerivedN> & N,
-  Eigen::PlainObjectBase<DerivedUV> & UV)
+  Eigen::PlainObjectBase<DerivedUV> & UV,
+  Eigen::PlainObjectBase<DerivedC> & C)
 {
   std::vector<std::vector<typename DerivedV::Scalar> > vV;
   std::vector<std::vector<typename DerivedF::Scalar> > vF;
   std::vector<std::vector<typename DerivedN::Scalar> > vN;
   std::vector<std::vector<typename DerivedUV::Scalar> > vUV;
-  if(!readPLY(filename,vV,vF,vN,vUV))
+  std::vector<std::vector<typename DerivedC::Scalar> > vC;
+  if(!readPLY(filename,vV,vF,vN,vUV,vC))
   {
     return false;
   }
@@ -198,7 +232,8 @@ IGL_INLINE bool igl::readPLY(
     list_to_matrix(vV,V) &&
     list_to_matrix(vF,F) &&
     list_to_matrix(vN,N) &&
-    list_to_matrix(vUV,UV);
+    list_to_matrix(vUV,UV) &&
+    list_to_matrix(vC,C);
 }
 
 template <
@@ -209,8 +244,8 @@ IGL_INLINE bool igl::readPLY(
   Eigen::PlainObjectBase<DerivedV> & V,
   Eigen::PlainObjectBase<DerivedF> & F)
 {
-  Eigen::MatrixXd N,UV;
-  return readPLY(filename,V,F,N,UV);
+  Eigen::MatrixXd N,UV,C;
+  return readPLY(filename,V,F,N,UV,C);
 }
 
 #ifdef IGL_STATIC_LIBRARY
